@@ -36,6 +36,32 @@ jobs:
           echo Add other actions to build,
           echo test, and deploy your project.
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # Replace with your desired AWS region
+
+      - name: Create VPC
+        run: |
+          aws ec2 create-vpc --cidr-block 10.0.0.0/16 --output json > vpc-output.json
+          vpc_id=$(jq -r '.Vpc.VpcId' vpc-output.json)
+          echo "VPC created with ID: $vpc_id"
+
       - name: Manual Approval
         uses: trstringer/manual-approval@v1
         timeout-minutes: 60
@@ -52,4 +78,4 @@ jobs:
       - name: Deployment
         run: |
           echo Add other actions to build,
-          echo test, and deploy your project.  
+          echo test, and deploy your project.
