@@ -7,28 +7,34 @@ jobs:
     runs-on: ubuntu-latest
 
     inputs:
-      proceed: 
+      proceed:
         description: 'Proceed with further steps?'
         required: true
         default: 'false'
 
+    strategy:
+      matrix:
+        proceed: [${{ github.event.inputs.proceed }}]
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Run commands
-      run: |
-        echo "Executing commands..."
+      - name: Run commands
+        run: |
+          # Run your commands here
+          # Example commands:
+          echo "Executing commands..."
 
-    - name: Check input and proceed
-      if: ${{ github.event.inputs.proceed == 'true' }}
-      run: |
-        # Add further steps to execute if the input is true
-        echo "Proceeding with further steps..."
-      
-    - name: Stop the process
-      if: ${{ github.event.inputs.proceed != 'true' }}
-      run: |
-        # Add any necessary steps to stop the process
-        echo "Stopping the process because input is not true..."
-        exit 1
+      - name: Check input and proceed
+        if: ${{ matrix.proceed == 'true' }}
+        run: |
+          # Add further steps to execute if the input is true
+          echo "Proceeding with further steps..."
+        
+      - name: Stop the process
+        if: ${{ matrix.proceed != 'true' }}
+        run: |
+          # Add any necessary steps to stop the process
+          echo "Stopping the process because input is not true..."
+          exit 1
