@@ -1,55 +1,26 @@
-name: Terraform
-on:
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: read
+name: My Conditional Workflow
+on: 
+  workflow_dispatch:
+    inputs:
+      proceed_flag:
+        description: "Proceed with subsequent steps?"
+        required: true
+        type: boolean
+        default: false  # Optional default value
 
 jobs:
-  terraform:
-    name: 'Terraform'
+  check_and_proceed:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: terraform
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Run a one-line script
+        run: echo This runs all the time
 
-      - name: Configure AWS Credentials Action For GitHub Actions
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.TF_DEV_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TF_DEV_SECRET_KEY }}
-          aws-region: ${{ secrets.TF_DEV_REGION }}
+      - name: Conditional execution
+        if: ${{ github.event.inputs.proceed_flag == 'true' }}
+        run: |
+          echo This is true statement
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-
-      - name: Terraform Init
-        run: terraform init -reconfigure
-
-      - name: Terraform Refresh
-        run: terraform refresh
-
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-
-      - name: Manual Approval
-        uses: trstringer/manual-approval@v1
-        timeout-minutes: 60
-        with:
-          approvers: PraveenKumarKasoju
-          minimum-approvals: 1
-          issue-title: "Terraform apply approval"
-          issue-body: "Please approve or deny the deployment of Terraform."
-          exclude-workflow-initiator-as-approver: false
-          additional-approved-words: ''
-          additional-denied-words: ''
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+      - name: Terminate if input is 'false'
+        if: ${{ github.event.inputs.proceed_flag == 'false' }}
+        run: |
+          echo This is false statement
