@@ -1,30 +1,34 @@
-name: My Conditional Workflow
-on: 
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
-    inputs:
-      proceed_flag:
-        description: "Proceed with subsequent steps?"
-        required: true
-        type: boolean
-        default: false  # Optional default value
+name: Example GitHub Action
+
+on: [push]
 
 jobs:
-  check_and_proceed:
+  build:
     runs-on: ubuntu-latest
+
+    inputs:
+      proceed: 
+        description: 'Proceed with further steps?'
+        required: true
+        default: 'false'
+
     steps:
-      - name: Run a one-line script
-        run: echo This runs all the time
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Conditional execution
-        if: ${{ github.event.inputs.proceed_flag == 'true' }}
-        run: |
-          echo This is true statement
+    - name: Run commands
+      run: |
+        echo "Executing commands..."
 
-      - name: Terminate if input is 'false'
-        if: ${{ github.event.inputs.proceed_flag == 'false' }}
-        run: |
-          echo This is false statement
+    - name: Check input and proceed
+      if: ${{ github.event.inputs.proceed == 'true' }}
+      run: |
+        # Add further steps to execute if the input is true
+        echo "Proceeding with further steps..."
+      
+    - name: Stop the process
+      if: ${{ github.event.inputs.proceed != 'true' }}
+      run: |
+        # Add any necessary steps to stop the process
+        echo "Stopping the process because input is not true..."
+        exit 1
